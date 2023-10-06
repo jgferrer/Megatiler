@@ -79,9 +79,12 @@ Entity player = {{0, 0}, {0, 0}, 8, 8, 0, FALSE, none, NULL, "PLAYER"};
 
 int main()
 {    
+    SYS_disableInts();
     basicInit();
+    SYS_enableInts();
     while(1)
     {
+        SYS_disableInts();
         switch(currentState){
             case STATE_MENU:{
                 processStateMenu();
@@ -101,11 +104,11 @@ int main()
 
 void basicInit(){
     JOY_init();
+    JOY_setEventHandler(&joyEventHandler);
     SPR_init();
     currentState = STATE_MENU;
     //Cleanup
     VDP_clearPlane(BG_A, TRUE);
-    JOY_setEventHandler(&joyEventHandler);
     PAL_setColor(0, RGB24_TO_VDPCOLOR(0x000000));
     cursor = SPR_addSprite(&gfx_cursor, 0, 0, 0);
     //Draw options
@@ -117,7 +120,7 @@ void basicInit(){
 }
 
 void drawMenuOptions(){
-    SPR_init();
+    SPR_reset();
     currentState = STATE_OPTIONS;
     //Cleanup
     VDP_clearPlane(BG_A, TRUE);
@@ -210,6 +213,7 @@ void processStateMenu(){
     while(currentState == STATE_MENU){
         updateCursorPosition();
         SPR_update();
+        SYS_enableInts();
         SYS_doVBlankProcess();
     }
 }
@@ -248,6 +252,7 @@ void processStatePlay(){
         }
         SPR_setPosition(player.sprite, player.pos.x, player.pos.y);
         SPR_update();
+        SYS_enableInts();
         SYS_doVBlankProcess();
     }
 }
@@ -260,6 +265,7 @@ void processStateOptions(){
     while(currentState == STATE_OPTIONS){
         updateCursorOptionsPosition();
         SPR_update();
+        SYS_enableInts();
         SYS_doVBlankProcess();
     }
     basicInit();
@@ -271,7 +277,7 @@ void loadLevel(){
     u8 y = 0;
     u8 t = 0;
 
-    SPR_init();
+    SPR_reset();
     for(y = 0; y < 8; y++){
         for (x = 0; x < 8; x++){
             t = level1[y][x];
