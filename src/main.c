@@ -76,6 +76,7 @@ typedef struct
 #define ANIM_SIDE 2
 
 Entity player = {{0, 0}, {0, 0}, 8, 8, 0, FALSE, none, NULL, "PLAYER"};
+s16 cont_pulsacion;
 
 int main()
 {    
@@ -165,6 +166,33 @@ void moveDown(){
     }
 }
 
+static void handleInput()
+{
+    if (currentState == STATE_PLAY) {
+        u16 value = JOY_readJoypad(JOY_1);
+        if (value & BUTTON_UP)
+        {
+            movePlayer(up);
+            cont_pulsacion++;
+        }
+        else if (value & BUTTON_DOWN)
+        {
+            movePlayer(down);
+            cont_pulsacion++;
+        }
+        else if (value & BUTTON_LEFT)
+        {
+            movePlayer(left);
+            cont_pulsacion++;
+        }
+        else if (value & BUTTON_RIGHT)
+        {
+            movePlayer(right);
+            cont_pulsacion++;
+        } 
+    }
+}
+
 void joyEventHandler(u16 joy, u16 changed, u16 state){
     if (currentState == STATE_MENU || currentState == STATE_OPTIONS){
         if (changed & state & BUTTON_UP)
@@ -185,27 +213,7 @@ void joyEventHandler(u16 joy, u16 changed, u16 state){
         {
             currentState = STATE_MENU;
         }
-    } else if (currentState == STATE_PLAY) {
-        if (joy == JOY_1)
-        {
-            if (state & BUTTON_UP)
-            {
-                movePlayer(up);
-            }
-            else if (state & BUTTON_DOWN)
-            {
-                movePlayer(down);
-            }
-            else if (state & BUTTON_LEFT)
-            {
-                movePlayer(left);
-            }
-            else if (state & BUTTON_RIGHT)
-            {
-                movePlayer(right);
-            }
-        }
-    }
+    } 
 }
 
 void processStateMenu(){
@@ -226,9 +234,13 @@ void processStatePlay(){
     PAL_setPalette(PAL1, floortiles.palette->data, DMA);
     PAL_setPalette(PAL2, spr_player.palette->data, DMA);
     loadLevel();
-    
+    cont_pulsacion = 0;
     while (currentState == STATE_PLAY)
     {
+        if(!cont_pulsacion) handleInput();
+        else cont_pulsacion++;
+        if(cont_pulsacion>30) cont_pulsacion = 0;
+
         if(player.moving == TRUE){
             switch(player.dir){
                 case up:
